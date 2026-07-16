@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Tech Dev: Interactive Exponential Explorer</title>
+    <!-- Tailwind CSS for Modern UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for real-time graphing -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen transition-colors duration-300">
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 border border-indigo-500/30 rounded-full text-indigo-400 text-sm mb-3">
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                โครงงานคณิตศาสตร์สร้างสรรค์ • Math Tech Dev
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 tracking-tight">
+                Exponential Explorer
+            </h1>
+            <p class="text-slate-400 mt-2 text-md md:text-lg max-w-2xl mx-auto">
+                เครื่องมือช่วยเรียนรู้และวิเคราะห์เลขยกกำลังตรรกยะแบบเห็นภาพทันทีใน 1 วินาที! ⚡️
+            </p>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+            
+            <!-- Left Side: Interactive Controls (5 Cols) -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
+                
+                <!-- Tab Switching (Sandbox vs Quiz Mode) -->
+                <div class="bg-slate-800/80 p-1.5 rounded-xl border border-slate-700/50 flex gap-2">
+                    <button id="btnSandbox" class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-600/10">
+                        🎛️ บอร์ดทดลองอิสระ
+                    </button>
+                    <button id="btnQuiz" class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200">
+                        🎮 เกมทายผลเลขยกกำลัง
+                    </button>
+                </div>
+
+                <!-- Control Panel Card -->
+                <div id="panelSandbox" class="bg-slate-800/80 p-6 rounded-2xl border border-slate-700/50 shadow-xl flex flex-col gap-6">
+                    <h2 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
+                        <span>🎚️</span> ปรับแต่งสมการตามใจชอบ
+                    </h2>
+
+                    <!-- Base Input Group -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-sm font-medium text-slate-300">ค่าฐาน (<span class="code-font text-indigo-400">a</span>)</label>
+                            <input type="number" id="baseInput" step="any" value="2" class="w-20 bg-slate-750 border border-slate-700 rounded-lg px-2 py-1 text-center text-sm text-indigo-400 focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="baseSlider" min="-10" max="10" step="0.1" value="2" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                            <span class="text-xs text-slate-400 w-10 text-right font-medium" id="baseValueDisplay">2.0</span>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-500 px-1">
+                            <span>-10.0</span>
+                            <span>0.0</span>
+                            <span>10.0</span>
+                        </div>
+                    </div>
+
+                    <!-- Numerator Input Group -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-sm font-medium text-slate-300">เศษของเลขชี้กำลัง (<span class="code-font text-purple-400">m</span>)</label>
+                            <span class="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-medium" id="numValBox">1</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="numSlider" min="-10" max="10" step="1" value="1" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500">
+                            <span class="text-xs text-slate-400 w-10 text-right font-medium" id="numValueDisplay">1</span>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-500 px-1">
+                            <span>-10</span>
+                            <span>0</span>
+                            <span>10</span>
+                        </div>
+                    </div>
+
+                    <!-- Denominator Input Group -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-sm font-medium text-slate-300">ส่วนของเลขชี้กำลัง (<span class="code-font text-pink-400">n</span>)</label>
+                            <span class="text-xs bg-pink-500/10 text-pink-400 px-2 py-0.5 rounded-full font-medium" id="denValBox">1</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="denSlider" min="-10" max="10" step="1" value="1" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500">
+                            <span class="text-xs text-slate-400 w-10 text-right font-medium" id="denValueDisplay">1</span>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-500 px-1">
+                            <span>-10</span>
+                            <span>0</span>
+                            <span>10</span>
+                        </div>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <button id="btnReset" class="w-full py-2.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-medium transition-colors border border-slate-650 flex items-center justify-center gap-2">
+                        🔄 รีเซ็ตค่าเริ่มต้น
+                    </button>
+                </div>
+
+                <!-- Quiz Mode Panel (Hidden initially) -->
+                <div id="panelQuiz" class="bg-slate-800/80 p-6 rounded-2xl border border-slate-700/50 shadow-xl hidden flex flex-col gap-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+                            <span>🎮</span> สมองประลองยกกำลัง
+                        </h2>
+                        <span class="text-xs bg-slate-700 text-amber-400 px-2.5 py-1 rounded-full font-bold" id="quizScoreDisplay">คะแนน: 0</span>
+                    </div>
+                    
+                    <p class="text-xs text-slate-400">
+                        ทายซิว่าคำตอบของโจทย์ข้อนี้จะมีค่าประมาณเท่าไหร่? (ตอบทศนิยมใกล้เคียงที่สุด)
+                    </p>
+
+                    <!-- Quiz Question Card -->
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700 text-center relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-amber-500/20 text-amber-300 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-bl-lg font-bold">
+                            Question
+                        </div>
+                        <div class="text-3xl font-extrabold text-white my-3" id="quizQuestionText">
+                            9<sup>(1/2)</sup>
+                        </div>
+                    </div>
+
+                    <!-- Multiple Choices Grid -->
+                    <div class="grid grid-cols-2 gap-3" id="quizChoicesContainer">
+                        <!-- Choices will be rendered here dynamically -->
+                    </div>
+
+                    <button id="btnSkipQuiz" class="w-full py-2 bg-slate-750 text-slate-400 hover:text-slate-200 rounded-lg text-xs font-medium transition-colors">
+                        ⏭️ ข้ามข้อนี้ไปก่อน
+                    </button>
+                </div>
+
+                <!-- Edge Case / Warning Banner -->
+                <div id="alertBox" class="hidden p-4 rounded-xl border flex gap-3 items-start animate-pulse">
+                    <span class="text-xl" id="alertIcon">⚠️</span>
+                    <div class="space-y-1">
+                        <h4 class="text-sm font-semibold" id="alertTitle">พบจุดอันตราย!</h4>
+                        <p class="text-xs leading-relaxed" id="alertMsg">ข้อความแจ้งเตือน</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Side: Visualization & Explanation (7 Cols) -->
+            <div class="lg:col-span-7 flex flex-col gap-6">
+                
+                <!-- Live Output Display -->
+                <div class="bg-slate-800/80 p-6 rounded-2xl border border-slate-700/50 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                    <div class="absolute -top-10 -left-10 h-32 w-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
+                    
+                    <div class="space-y-1 text-center md:text-left z-10">
+                        <p class="text-xs text-slate-400 uppercase tracking-widest font-bold">ผลลัพธ์การยกกำลัง</p>
+                        <div class="text-4xl md:text-5xl font-extrabold tracking-tight" id="resultFormula">
+                            2<sup>(1)</sup>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/80 border border-slate-700/60 py-4 px-6 rounded-xl text-center min-w-[150px] z-10">
+                        <span class="text-[10px] text-slate-500 block uppercase tracking-wider font-bold">ค่าโดยประมาณ</span>
+                        <span class="text-3xl font-mono font-bold text-indigo-400" id="resultValue">2.0000</span>
+                    </div>
+                </div>
+
+                <!-- Graphing Area Card -->
+                <div class="bg-slate-800/80 p-6 rounded-2xl border border-slate-700/50 shadow-xl flex flex-col gap-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                            <span>📈</span> แผนภาพพฤติกรรมของสมการ y = a<sup>x</sup>
+                        </h3>
+                        <span class="text-xs text-slate-500" id="graphStateText">กำลังวาดจุดแบบสดใหม่</span>
+                    </div>
+
+                    <!-- Responsive Canvas Container -->
+                    <div class="relative bg-slate-900/50 rounded-xl p-4 border border-slate-750" style="height: 280px;">
+                        <canvas id="exponentChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- Humanized Step-by-Step Explanation Card -->
+                <div class="bg-slate-800/80 p-6 rounded-2xl border border-slate-700/50 shadow-xl flex flex-col gap-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                            <span>💡</span> กางสูตร แกะรอยวิธีคิดทีละบรรทัด
+                        </h3>
+                        <button id="btnCopySteps" class="text-xs bg-slate-700 hover:bg-slate-650 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium">
+                            📋 คัดลอกวิธีคิด
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-750 text-slate-300 space-y-3 leading-relaxed text-sm" id="stepsContent">
+                        <!-- Dynamic calculations go here -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Custom Notification Banner for copy -->
+        <div id="toast" class="fixed bottom-5 right-5 bg-emerald-500 text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2 text-sm">
+            <span>✅</span> คัดลอกวิธีคิดเรียบร้อยแล้วจ้า! เอาไปใช้จดสรุปได้เลย
+        </div>
+
+    </div>
+
+    <!-- Script Section -->
+    <script>
+        // DOM Elements
+        const baseSlider = document.getElementById('baseSlider');
+        const baseInput = document.getElementById('baseInput');
+        const baseValueDisplay = document.getElementById('baseValueDisplay');
+        const numSlider = document.getElementById('numSlider');
+        const numValueDisplay = document.getElementById('numValueDisplay');
+        const numValBox = document.getElementById('numValBox');
+        const denSlider = document.getElementById('denSlider');
+        const denValueDisplay = document.getElementById('denValueDisplay');
+        const denValBox = document.getElementById('denValBox');
+        
+        const resultFormula = document.getElementById('resultFormula');
+        const resultValue = document.getElementById('resultValue');
+        const stepsContent = document.getElementById('stepsContent');
+        const btnCopySteps = document.getElementById('btnCopySteps');
+        const toast = document.getElementById('toast');
+        const btnReset = document.getElementById('btnReset');
+        const graphStateText = document.getElementById('graphStateText');
+
+        // Alert Element
+        const alertBox = document.getElementById('alertBox');
+        const alertIcon = document.getElementById('alertIcon');
+        const alertTitle = document.getElementById('alertTitle');
+        const alertMsg = document.getElementById('alertMsg');
+
+        // Mode Switching
+        const btnSandbox = document.getElementById('btnSandbox');
+        const btnQuiz = document.getElementById('btnQuiz');
+        const panelSandbox = document.getElementById('panelSandbox');
+        const panelQuiz = document.getElementById('panelQuiz');
+
+        // Quiz State Variables
+        let quizScore = 0;
+        let currentQuizData = null;
+        let isQuizMode = false;
+
+        let chartInstance = null;
+
+        // Synchronize base slider and number input
+        baseSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value).toFixed(1);
+            baseInput.value = val;
+            baseValueDisplay.innerText = val;
+            runCalculation();
+        });
+
+        baseInput.addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            if (isNaN(val)) val = 1;
+            // Bound range for slider preview
+            baseSlider.value = val > 10 ? 10 : (val < -10 ? -10 : val);
+            baseValueDisplay.innerText = val.toFixed(1);
+            runCalculation();
+        });
+
+        numSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            numValueDisplay.innerText = val;
+            numValBox.innerText = val;
+            runCalculation();
+        });
+
+        denSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            denValueDisplay.innerText = val;
+            denValBox.innerText = val;
+            runCalculation();
+        });
+
+        // Safe and custom absolute rounding root for negative values
+        function calculateSafePower(base, num, den) {
+            const x = num / den;
+            
+            // Extreme edge cases handling
+            if (den === 0) {
+                return { error: 'den_zero', msg: 'ตัวส่วนเป็น 0 ไม่นิยามในทางคณิตศาสตร์นะจ๊ะ ไม่งั้นจะปวดหัวแน่นอน 🤯' };
+            }
+
+            if (base === 0) {
+                if (x < 0) {
+                    return { error: 'zero_neg_power', msg: 'เมื่อฐานเป็น 0 เลขชี้กำลังเป็นลบจะเทียบเท่ากับการหารด้วย 0 ซึ่งห้ามเด็ดขาดนะ! 🧐' };
+                }
+                if (x === 0) {
+                    return { error: 'zero_power_zero', msg: '0 ยกกำลัง 0 ไม่นิยามในทางคณิตศาสตร์ เพราะมันคลุมเครือสุด ๆ ไปเลย 🌀' };
+                }
+                return { value: 0, formula: '0' };
+            }
+
+            if (base < 0) {
+                // If denominator is even (e.g., negative root of even degree) -> It leads to imaginary numbers
+                if (Math.abs(den) % 2 === 0) {
+                    return { error: 'complex_root', msg: 'ฐานติดลบแต่ดันเป็นรากคู่แบบนี้ มันจะถอดออกมาไม่เจอในสารบบจำนวนจริงจ้า (เป็นจำนวนเชิงซ้อนนั่นเอง) ⚠️' };
+                }
+                
+                // Real roots of negative base
+                const isResultNegative = (num % 2 !== 0);
+                const absPower = Math.pow(Math.abs(base), Math.abs(num));
+                let absRoot = Math.pow(absPower, 1 / Math.abs(den));
+                
+                if (num / den < 0) {
+                    absRoot = 1 / absRoot;
+                }
+
+                const finalVal = isResultNegative ? -absRoot : absRoot;
+                return { value: finalVal };
+            }
+
+            // Normal case (Positive base)
+            return { value: Math.pow(base, x) };
+        }
+
+        // Generate and update steps naturally (human-written like explanations)
+        function updateStepsHtml(base, num, den, resultData) {
+            if (resultData.error) {
+                stepsContent.innerHTML = `
+                    <div class="text-rose-400 font-semibold flex items-center gap-2">
+                        <span>❌</span> ไม่สามารถสร้างขั้นตอนการคิดได้เนื่องจากเกิดข้อผิดพลาดคณิตศาสตร์
+                    </div>
+                `;
+                return;
+            }
+
+            const val = resultData.value;
+            const absoluteBase = Math.abs(base);
+            const isNegativeBase = base < 0;
+            const exponentVal = (num / den).toFixed(4);
+
+            let steps = [];
+            steps.push(`👉 <strong>ตั้งโจทย์:</strong> เราอยากรู้คำตอบของ <span class="code-font text-indigo-300 font-bold">${base}<sup>(${num}/${den})</sup></span>`);
+
+            if (isNegativeBase) {
+                steps.push(`1️⃣ <strong>สำรวจฐานติดลบ:</strong> ฐานของเราคือ <span class="text-rose-300 font-bold">${base}</span> ส่วนเลขชี้กำลังคือ <span class="text-purple-300 font-bold">${num}/${den}</span>`);
+                steps.push(`2️⃣ <strong>ตรวจเช็กราก:</strong> ตัวเศษ <span class="code-font">${num}</span> และตัวส่วน <span class="code-font">${den}</span> เป็นจำนวนคี่ ซึ่งแปลว่าสามารถถอดรากที่ <span class="code-font">${Math.abs(den)}</span> ได้ปลอดภัยในระบบจำนวนจริงแน่นอน`);
+                
+                const stepPow = Math.pow(absoluteBase, Math.abs(num));
+                steps.push(`3️⃣ <strong>แยกคิดแบบไร้เครื่องหมายก่อน:</strong> หาค่าของ ${absoluteBase}<sup>${Math.abs(num)}</sup> ได้ผลลัพธ์เป็น <strong>${stepPow.toFixed(2)}</strong>`);
+                
+                const stepRoot = Math.pow(stepPow, 1 / Math.abs(den));
+                steps.push(`4️⃣ <strong>นำไปถอดราก:</strong> ถอดรากที่ ${Math.abs(den)} ของ ${stepPow.toFixed(2)} ได้คำตอบเท่ากับ <strong>${stepRoot.toFixed(4)}</strong>`);
+                
+                if (num % 2 !== 0) {
+                    steps.push(`5️⃣ <strong>คืนเครื่องหมายลบ:</strong> เนื่องจากเลขเศษเป็นคี่ ทำให้เครื่องหมายติดลบยังคงอยู่ จะได้คำตอบเท่ากับ <strong>-${stepRoot.toFixed(4)}</strong>`);
+                } else {
+                    steps.push(`5️⃣ <strong>คืนเครื่องหมายลบ:</strong> เนื่องจากเลขเศษเป็นคู่ ทำให้ลบเจอสลับลบกลายเป็นบวกเรียบร้อย ได้ผลลัพธ์สุดท้ายเป็น <strong>${stepRoot.toFixed(4)}</strong>`);
+                }
+
+                if (num / den < 0) {
+                    steps.push(`6️⃣ <strong>ปรับเลขชี้กำลังที่ติดลบ:</strong> เนื่องจากสมการเดิมมีเครื่องหมายชี้กำลังติดลบ ให้กลับตัวเศษเป็นส่วน จะได้ผลลัพธ์สุดท้ายเป็น <span class="text-emerald-400 font-bold">${val.toFixed(4)}</span> ✨`);
+                }
+            } else {
+                steps.push(`1️⃣ <strong>แปลงรูปคณิตศาสตร์:</strong> แปลงเลขยกกำลังตรรกยะให้มาอยู่ในรูปของราก (Radical Form) ได้เป็น <code>รากที่ ${Math.abs(den)} ของ (${base}<sup>${Math.abs(num)}</sup>)</code>`);
+                
+                const innerPower = Math.pow(base, Math.abs(num));
+                steps.push(`2️⃣ <strong>คิดเลขในกรณฑ์ก่อน:</strong> หาค่า ${base}<sup>${Math.abs(num)}</sup> เท่ากับ <strong>${innerPower.toFixed(2)}</strong>`);
+                
+                const baseRoot = Math.pow(innerPower, 1 / Math.abs(den));
+                steps.push(`3️⃣ <strong>ถอดรากสรุปผล:</strong> ถอดรากที่ ${Math.abs(den)} ของ ${innerPower.toFixed(2)} ได้เป็น <strong>${baseRoot.toFixed(4)}</strong>`);
+                
+                if (num / den < 0) {
+                    steps.push(`4️⃣ <strong>ปรับเลขชี้กำลังติดลบ:</strong> เนื่องจากชี้กำลังดั้งเดิมติดลบ เราจึงแปลงกลับเป็นเศษส่วน 1 / ${baseRoot.toFixed(4)} ซึ่งได้ผลลัพธ์เบ็ดเสร็จเป็น <span class="text-emerald-400 font-bold">${val.toFixed(4)}</span> 🎉`);
+                } else {
+                    steps.push(`4️⃣ <strong>เสร็จสิ้น:</strong> จะได้ผลลัพธ์สุดท้ายเท่ากับ <span class="text-emerald-400 font-bold">${val.toFixed(4)}</span> 🎉`);
+                }
+            }
+
+            stepsContent.innerHTML = steps.map(s => `<p class="border-b border-slate-850 pb-2 last:border-none">${s}</p>`).join('');
+        }
+
+        // Handle Errors and Warnings nicely on UI
+        function updateAlertUi(errorType, message) {
+            if (!errorType) {
+                alertBox.classList.add('hidden');
+                return;
+            }
+
+            alertBox.classList.remove('hidden');
+            alertMsg.innerText = message;
+
+            if (errorType === 'den_zero') {
+                alertBox.className = "p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 flex gap-3 items-start animate-pulse";
+                alertIcon.innerText = "🚨";
+                alertTitle.innerText = "เกิดวิกฤตคณิตศาสตร์!";
+            } else if (errorType === 'complex_root') {
+                alertBox.className = "p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 flex gap-3 items-start";
+                alertIcon.innerText = "🧐";
+                alertTitle.innerText = "ตรวจพบมิติที่นิยามไม่ได้";
+            } else {
+                alertBox.className = "p-4 rounded-xl border border-purple-500/30 bg-purple-500/10 text-purple-300 flex gap-3 items-start";
+                alertIcon.innerText = "⚠️";
+                alertTitle.innerText = "ข้อมูลไม่นิยาม";
+            }
+        }
+
+        // Draw and update real-time chart
+        function drawExponentialGraph(base, highlightX, highlightY) {
+            const ctx = document.getElementById('exponentChart').getContext('2d');
+            const xData = [];
+            const yData = [];
+
+            // If base cannot be resolved on a normal real plane (e.g. negative or null), let's render a flat indicator line or blank chart cleanly
+            const canPlotNormally = (base !== null && base > 0);
+
+            if (canPlotNormally) {
+                graphStateText.innerText = `กำลังวิเคราะห์แกนของ y = ${base}^x`;
+                // Generate exponential curve points from -3 to 3
+                for (let xVal = -3; xVal <= 3; xVal += 0.1) {
+                    xData.push(xVal);
+                    yData.push(Math.pow(base, xVal));
+                }
+            } else {
+                graphStateText.innerText = `ไม่สามารถวาดแนวโค้งในระบบจำนวนจริงได้`;
+                // Flat line indicator or empty
+                for (let xVal = -3; xVal <= 3; xVal += 0.5) {
+                    xData.push(xVal);
+                    yData.push(null);
+                }
+            }
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const datasets = [];
+
+            // Primary Exponential curve
+            if (canPlotNormally) {
+                datasets.push({
+                    label: `y = ${base}^x`,
+                    data: yData,
+                    borderColor: 'rgba(99, 102, 241, 0.9)',
+                    borderWidth: 3,
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0.15
+                });
+
+                // Highlight point representing current rational exponent position
+                if (highlightX !== undefined && highlightY !== undefined && !isNaN(highlightY)) {
+                    datasets.push({
+                        label: `จุดพิกัดปัจจุบัน (${highlightX.toFixed(2)}, ${highlightY.toFixed(2)})`,
+                        data: [{ x: highlightX, y: highlightY }],
+                        backgroundColor: '#ff007f',
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        pointRadius: 8,
+                        pointHoverRadius: 10,
+                        type: 'scatter'
+                    });
+                }
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: xData,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: canPlotNormally,
+                            labels: { color: '#94a3b8', font: { family: 'Kanit' } }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            min: -3,
+                            max: 3,
+                            grid: { color: 'rgba(51, 65, 85, 0.5)' },
+                            ticks: { color: '#64748b' }
+                        },
+                        y: {
+                            min: 0,
+                            max: (base && base > 2) ? Math.pow(base, 2) + 2 : 12,
+                            grid: { color: 'rgba(51, 65, 85, 0.5)' },
+                            ticks: { color: '#64748b' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Orchestrator Calculation
+        function runCalculation() {
+            if (isQuizMode) return; // Ignore main slider triggers when playing quiz to preserve layout focus
+
+            const a = parseFloat(baseInput.value);
+            const m = parseInt(numSlider.value);
+            const n = parseInt(denSlider.value);
+
+            const resultObj = calculateSafePower(a, m, n);
+
+            if (resultObj.error) {
+                resultFormula.innerHTML = `${a}<sup>(${m}/${n})</sup>`;
+                resultValue.innerText = "NaN";
+                updateAlertUi(resultObj.error, resultObj.msg);
+                updateStepsHtml(a, m, n, resultObj);
+                drawExponentialGraph(null);
+            } else {
+                resultFormula.innerHTML = `${a}<sup>(${m}/${n})</sup>`;
+                resultValue.innerText = resultObj.value.toFixed(4);
+                updateAlertUi(null);
+                updateStepsHtml(a, m, n, resultObj);
+                drawExponentialGraph(a, m / n, resultObj.value);
+            }
+        }
+
+        // Reset inputs helper
+        btnReset.addEventListener('click', () => {
+            baseInput.value = "2";
+            baseSlider.value = "2";
+            baseValueDisplay.innerText = "2.0";
+            numSlider.value = "1";
+            numValueDisplay.innerText = "1";
+            numValBox.innerText = "1";
+            denSlider.value = "1";
+            denValueDisplay.innerText = "1";
+            denValBox.innerText = "1";
+            runCalculation();
+        });
+
+        // Copy explanation steps function
+        btnCopySteps.addEventListener('click', () => {
+            const rawText = stepsContent.innerText;
+            
+            // Clipboard fallback mechanism for canvas frames
+            const textToCopy = `[สูตรเลขยกกำลังจากโครงงาน Math Tech Dev]\n${rawText}`;
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                document.execCommand('copy');
+                // Trigger Visual Toast Success
+                toast.classList.remove('opacity-0', 'translate-y-20', 'pointer-events-none');
+                toast.classList.add('opacity-100', 'translate-y-0');
+                
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100', 'translate-y-0');
+                    toast.classList.add('opacity-0', 'translate-y-20', 'pointer-events-none');
+                }, 3000);
+            } catch (err) {
+                console.error("ไม่สามารถคัดลอกได้", err);
+            }
+            
+            document.body.removeChild(tempTextArea);
+        });
+
+        // Interactive Quiz Generator
+        function generateQuizQuestion() {
+            const questions = [
+                { base: 4, num: 1, den: 2, answer: 2, choices: [2, 4, 8, 1.5] },
+                { base: 8, num: 1, den: 3, answer: 2, choices: [2, 3, 4, 1.25] },
+                { base: 9, num: 3, den: 2, answer: 27, choices: [27, 9, 3, 18] },
+                { base: 27, num: 2, den: 3, answer: 9, choices: [9, 3, 6, 18] },
+                { base: 16, num: -1, den: 2, answer: 0.25, choices: [0.25, -4, 4, 0.5] },
+                { base: 100, num: 1, den: 2, answer: 10, choices: [10, 50, 1, 100] },
+                { base: 32, num: 1, den: 5, answer: 2, choices: [2, 6.4, 4, 5] },
+                { base: 125, num: -1, den: 3, answer: 0.2, choices: [0.2, 5, -5, 0.04] }
+            ];
+
+            const randIndex = Math.floor(Math.random() * questions.length);
+            currentQuizData = questions[randIndex];
+
+            // Render on UI
+            document.getElementById('quizQuestionText').innerHTML = `${currentQuizData.base}<sup>(${currentQuizData.num}/${currentQuizData.den})</sup>`;
+            
+            const choicesContainer = document.getElementById('quizChoicesContainer');
+            choicesContainer.innerHTML = '';
+
+            currentQuizData.choices.forEach(choice => {
+                const choiceBtn = document.createElement('button');
+                choiceBtn.className = "py-3 px-4 bg-slate-700 hover:bg-slate-650 active:bg-indigo-600 text-slate-100 rounded-xl text-sm font-bold transition-all border border-slate-600 hover:border-slate-500 flex items-center justify-center";
+                choiceBtn.innerText = choice;
+                choiceBtn.addEventListener('click', () => checkQuizAnswer(choice, choiceBtn));
+                choicesContainer.appendChild(choiceBtn);
+            });
+        }
+
+        function checkQuizAnswer(selectedVal, element) {
+            const isCorrect = (selectedVal === currentQuizData.answer);
+            
+            // Stop multi clicks by removing listeners
+            const allChoiceButtons = document.querySelectorAll('#quizChoicesContainer button');
+            allChoiceButtons.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                quizScore += 10;
+                element.className = "py-3 px-4 bg-emerald-600 border border-emerald-400 text-white rounded-xl text-sm font-bold flex items-center justify-center animate-bounce";
+                element.innerHTML = `🎉 ถูกต้อง! (${selectedVal})`;
+                document.getElementById('quizScoreDisplay').innerText = `คะแนน: ${quizScore}`;
+            } else {
+                element.className = "py-3 px-4 bg-rose-600 border border-rose-400 text-white rounded-xl text-sm font-bold flex items-center justify-center";
+                element.innerHTML = `❌ ผิดเต็ม ๆ เลย (${selectedVal})`;
+                
+                // Highlight correct button
+                allChoiceButtons.forEach(btn => {
+                    if (parseFloat(btn.innerText) === currentQuizData.answer) {
+                        btn.className = "py-3 px-4 bg-emerald-600 border border-emerald-400 text-white rounded-xl text-sm font-bold flex items-center justify-center";
+                    }
+                });
+            }
+
+            // Sync visual representation details instantly to the main dashboard logic
+            const quizValObj = calculateSafePower(currentQuizData.base, currentQuizData.num, currentQuizData.den);
+            resultFormula.innerHTML = `${currentQuizData.base}<sup>(${currentQuizData.num}/${currentQuizData.den})</sup>`;
+            resultValue.innerText = quizValObj.value.toFixed(4);
+            updateStepsHtml(currentQuizData.base, currentQuizData.num, currentQuizData.den, quizValObj);
+            drawExponentialGraph(currentQuizData.base, currentQuizData.num / currentQuizData.den, quizValObj.value);
+
+            // Auto transition to next quiz question
+            setTimeout(() => {
+                generateQuizQuestion();
+            }, 2500);
+        }
+
+        // Quiz control triggers
+        btnSkipQuiz.addEventListener('click', () => {
+            generateQuizQuestion();
+        });
+
+        // Tab Switching Actions
+        btnSandbox.addEventListener('click', () => {
+            isQuizMode = false;
+            btnSandbox.className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-600/10";
+            btnQuiz.className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200";
+            panelSandbox.classList.remove('hidden');
+            panelQuiz.classList.add('hidden');
+            runCalculation();
+        });
+
+        btnQuiz.addEventListener('click', () => {
+            isQuizMode = true;
+            btnQuiz.className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 bg-amber-500 text-slate-950 shadow-md shadow-amber-500/10 font-bold";
+            btnSandbox.className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200";
+            panelSandbox.classList.add('hidden');
+            panelQuiz.classList.remove('hidden');
+            generateQuizQuestion();
+        });
+
+        // Bootstrapping the app
+        window.onload = function() {
+            runCalculation();
+        };
+
+    </script>
+</body>
+</html>
